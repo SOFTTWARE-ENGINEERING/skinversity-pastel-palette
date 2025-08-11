@@ -6,15 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FormValues {
   name: string;
   email: string;
   address: string;
-  card: string;
-  expiry: string;
-  cvc: string;
+  provider: string;
+  phone: string;
 }
+
 
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
@@ -23,11 +24,15 @@ const Checkout = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
     const id = Math.random().toString(36).slice(2, 10).toUpperCase();
     setOrderId(id);
     clearCart();
-    toast({ title: "Order placed", description: `Confirmation #${id}` });
+    toast({ title: "Payment initiated", description: `Mobile money ref #${id}` });
+    // Notify via Edge Function (demo)
+    await supabase.functions.invoke("notify-order", {
+      body: { orderId: id, provider: data.provider, phone: data.phone, amount: totalPrice },
+    });
   };
 
   // Redirect to shop if cart is empty and no order has been placed
@@ -40,7 +45,7 @@ const Checkout = () => {
     <main className="container mx-auto px-4 py-10">
       <Helmet>
         <title>Checkout | Skinversity</title>
-        <meta name="description" content="Secure checkout at Skinversity. Enter your details to complete your order." />
+        <meta name="description" content="Secure mobile money checkout at Skinversity. Enter your details to complete your order." />
         <link rel="canonical" href="/checkout" />
       </Helmet>
 
@@ -78,18 +83,19 @@ const Checkout = () => {
               {errors.address && <p className="text-sm text-destructive mt-1">Please enter your address</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-1">
+                <label className="text-sm">Provider</label>
+                <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base md:text-sm" {...register("provider", { required: true })}>
+                  <option value="">Select provider</option>
+                  <option value="mpesa">M-Pesa</option>
+                  <option value="mtn">MTN MoMo</option>
+                  <option value="airtel">Airtel Money</option>
+                </select>
+              </div>
               <div className="md:col-span-2">
-                <label className="text-sm">Card number</label>
-                <Input inputMode="numeric" placeholder="4242 4242 4242 4242" {...register("card", { required: true, minLength: 12 })} />
-                {errors.card && <p className="text-sm text-destructive mt-1">Card number required</p>}
-              </div>
-              <div>
-                <label className="text-sm">Expiry</label>
-                <Input placeholder="MM/YY" {...register("expiry", { required: true })} />
-              </div>
-              <div>
-                <label className="text-sm">CVC</label>
-                <Input inputMode="numeric" placeholder="123" {...register("cvc", { required: true, minLength: 3 })} />
+                <label className="text-sm">Mobile number</label>
+                <Input inputMode="tel" placeholder="e.g. +254700000000" {...register("phone", { required: true, minLength: 7 })} />
+                {errors.phone && <p className="text-sm text-destructive mt-1">Valid phone required</p>}
               </div>
             </div>
             <Button type="submit" size="lg">Pay {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(totalPrice)}</Button>
@@ -100,7 +106,7 @@ const Checkout = () => {
               <span>Total</span>
               <span className="font-semibold">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(totalPrice)}</span>
             </div>
-            <p className="text-xs text-muted-foreground">This is a demo checkout. Do not enter real card data.</p>
+            <p className="text-xs text-muted-foreground">Mobile money only. This is a demo checkout; do not enter real numbers.</p>
           </aside>
         </form>
       )}
