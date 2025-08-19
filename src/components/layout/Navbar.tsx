@@ -21,9 +21,14 @@ const Navbar = () => {
         </div>
         <div className="flex items-center gap-3">
           {user ? (
-            <button onClick={signOut} aria-label="Logout" className="hover:text-primary transition-colors flex items-center gap-1 text-sm">
-              <LogOut className="h-4 w-4" /> Logout
-            </button>
+            <>
+              <NavLink to="/admin" className="hover:text-primary transition-colors text-sm">
+                Admin
+              </NavLink>
+              <button onClick={signOut} aria-label="Logout" className="hover:text-primary transition-colors flex items-center gap-1 text-sm">
+                <LogOut className="h-4 w-4" /> Logout
+              </button>
+            </>
           ) : (
             <NavLink to="/auth" aria-label="Login" className="hover:text-primary transition-colors">
               <UserRound />
