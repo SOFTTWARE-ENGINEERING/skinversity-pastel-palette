@@ -20,6 +20,8 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Posts from "./pages/Posts";
 import Orders from "./pages/Orders";
+import AdminDashboard from "./pages/AdminDashboard";
+import DashboardHome from "./pages/admin/DashboardHome";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +47,12 @@ const App = () => (
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/about" element={<About />} />
+                
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminDashboard />}>
+                  <Route index element={<DashboardHome />} />
+                </Route>
+                
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
