@@ -1,10 +1,53 @@
 import { Helmet } from "react-helmet-async";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Package, ShoppingCart, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
+import { fetchProducts } from "@/api/products";
+import { fetchAllOrders } from "@/api/orders";
+import type { Product } from "@/types/product";
+import type { OrderWithItems } from "@/types/order";
 
 const DashboardHome = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<OrderWithItems[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [productsData, ordersData] = await Promise.all([
+          fetchProducts(),
+          fetchAllOrders()
+        ]);
+
+        setProducts(productsData);
+        setOrders(ordersData.orders || []);
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  const pendingOrders = orders.filter(order => order.status === 'pending').length;
+  const totalProducts = products.length;
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Helmet>
@@ -31,8 +74,10 @@ const DashboardHome = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$0.00</div>
-            <p className="text-xs text-muted-foreground">Start selling to see revenue</p>
+            <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground">
+              {orders.length > 0 ? `${orders.length} orders` : 'Start selling to see revenue'}
+            </p>
           </CardContent>
         </Card>
 
