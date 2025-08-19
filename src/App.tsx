@@ -22,6 +22,8 @@ import Posts from "./pages/Posts";
 import Orders from "./pages/Orders";
 import AdminDashboard from "./pages/AdminDashboard";
 import DashboardHome from "./pages/admin/DashboardHome";
+import AdminProducts from "./pages/admin/AdminProducts";
+import AdminOrders from "./pages/admin/AdminOrders";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +53,8 @@ const App = () => (
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminDashboard />}>
                   <Route index element={<DashboardHome />} />
+                  <Route path="products" element={<AdminProducts />} />
+                  <Route path="orders" element={<AdminOrders />} />
                 </Route>
                 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
