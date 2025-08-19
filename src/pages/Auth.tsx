@@ -73,7 +73,7 @@ const Auth = () => {
 
       <div className="space-y-2">
         <Button variant="outline" className="w-full" onClick={()=>handleProvider('google')}>Continue with Google</Button>
-        <Button variant="outline" className="w-full" onClick={()=>handleProvider('github')}>Continue with GitHub</Button>
+        {/* <Button variant="outline" className="w-full" onClick={()=>handleProvider('github')}>Continue with GitHub</Button> */}
         <Button variant="outline" className="w-full" onClick={()=>handleProvider('twitter')}>Continue with Twitter</Button>
       </div>
     </main>
