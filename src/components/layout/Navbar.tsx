@@ -13,6 +13,9 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-6 text-sm">
           <NavLink to="/" className={({isActive})=> isActive ? "text-primary" : "hover:text-primary transition-colors"}>Home</NavLink>
           <NavLink to="/shop" className={({isActive})=> isActive ? "text-primary" : "hover:text-primary transition-colors"}>Shop</NavLink>
+          {user && (
+            <NavLink to="/orders" className={({isActive})=> isActive ? "text-primary" : "hover:text-primary transition-colors"}>Orders</NavLink>
+          )}
           <NavLink to="/posts" className={({isActive})=> isActive ? "text-primary" : "hover:text-primary transition-colors"}>Posts</NavLink>
           <NavLink to="/about" className={({isActive})=> isActive ? "text-primary" : "hover:text-primary transition-colors"}>About</NavLink>
         </div>

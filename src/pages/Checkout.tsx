@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
+import { createOrder } from "@/api/orders";
 import { supabase } from "@/integrations/supabase/client";
 
 interface FormValues {
@@ -19,20 +21,53 @@ interface FormValues {
 
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
+  const { user } = useAuth();
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>();
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const onSubmit = async (data: FormValues) => {
-    const id = Math.random().toString(36).slice(2, 10).toUpperCase();
-    setOrderId(id);
-    clearCart();
-    toast({ title: "Payment initiated", description: `Mobile money ref #${id}` });
-    // Notify via Edge Function (demo)
-    await supabase.functions.invoke("notify-order", {
-      body: { orderId: id, provider: data.provider, phone: data.phone, amount: totalPrice },
-    });
+    if (!user) {
+      toast({ title: "Authentication required", description: "Please log in to complete your order", variant: "destructive" });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      // Create order in database
+      const { order, error } = await createOrder(user.id, items, totalPrice);
+      
+      if (error || !order) {
+        toast({ title: "Order creation failed", description: error || "Please try again", variant: "destructive" });
+        return;
+      }
+
+      // Generate payment reference
+      const paymentRef = Math.random().toString(36).slice(2, 10).toUpperCase();
+      
+      setOrderId(order.id);
+      clearCart();
+      
+      toast({ title: "Order created successfully", description: `Order #${order.id} - Payment initiated via ${data.provider}` });
+      
+      // Notify via Edge Function (demo)
+      await supabase.functions.invoke("notify-order", {
+        body: { 
+          orderId: order.id, 
+          paymentRef,
+          provider: data.provider, 
+          phone: data.phone, 
+          amount: totalPrice 
+        },
+      });
+    } catch (error) {
+      toast({ title: "Checkout failed", description: "Please try again", variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Redirect to shop if cart is empty and no order has been placed
@@ -60,7 +95,7 @@ const Checkout = () => {
             <p className="font-mono text-lg">#{orderId}</p>
           </div>
           <div className="flex gap-3">
-            <Button onClick={()=>navigate("/")}>Back Home</Button>
+            <Button onClick={()=>navigate("/orders")}>View Order</Button>
             <Button variant="outline" onClick={()=>navigate("/shop")}>Continue Shopping</Button>
           </div>
         </section>
@@ -98,7 +133,9 @@ const Checkout = () => {
                 {errors.phone && <p className="text-sm text-destructive mt-1">Valid phone required</p>}
               </div>
             </div>
-            <Button type="submit" size="lg">Pay {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(totalPrice)}</Button>
+            <Button type="submit" size="lg" disabled={isSubmitting}>
+              {isSubmitting ? "Creating Order..." : `Pay ${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(totalPrice)}`}
+            </Button>
           </section>
           <aside className="border rounded-lg p-6 h-fit">
             <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
