@@ -60,13 +60,6 @@ const Checkout = () => {
     }
   };
 
-  // Paystack payment hook
-  const initializePayment = usePaystackPayment({
-    ...config,
-    onSuccess,
-    onClose
-  });
-
   // Payment success handler
   const onSuccess = async (reference: any) => {
     try {
@@ -78,6 +71,9 @@ const Checkout = () => {
             title: "Payment Successful!", 
             description: `Transaction reference: ${reference.reference}` 
           });
+          
+          // Clear cart and show success
+          clearCart();
           
           // Notify via Edge Function
           await supabase.functions.invoke("notify-order", {
@@ -114,6 +110,9 @@ const Checkout = () => {
     });
   };
 
+  // Paystack payment hook
+  const initializePayment = usePaystackPayment(config);
+
   const onSubmit = async (data: FormValues) => {
     if (!user) {
       toast({ title: "Authentication required", description: "Please log in to complete your order", variant: "destructive" });
@@ -136,7 +135,7 @@ const Checkout = () => {
       setOrderId(order.id);
       
       // Initialize Paystack payment
-      initializePayment();
+      initializePayment(onSuccess, onClose);
       
     } catch (error) {
       toast({ title: "Checkout failed", description: "Please try again", variant: "destructive" });
