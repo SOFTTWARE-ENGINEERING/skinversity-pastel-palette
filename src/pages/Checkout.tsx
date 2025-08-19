@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
-import { createOrder } from "@/api/orders";
+import { createOrder, updateOrderStatus } from "@/api/orders";
 import { supabase } from "@/integrations/supabase/client";
+import { usePaystackPayment } from "react-paystack";
 
 interface FormValues {
   name: string;
@@ -25,8 +26,93 @@ const Checkout = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>();
   const [orderId, setOrderId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentData, setPaymentData] = useState<FormValues | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Paystack configuration
+  const config = {
+    reference: (new Date()).getTime().toString(),
+    email: paymentData?.email || user?.email || "",
+    amount: totalPrice * 100, // Paystack expects amount in kobo (smallest currency unit)
+    publicKey: process.env.REACT_APP_PAYSTACK_PUBLIC_KEY || "pk_test_51H1234567890abcdefghijklmnopqrstuvwxyz", // Replace with your actual Paystack public key
+    currency: "NGN",
+    channels: ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"],
+    label: "Skinversity Order",
+    metadata: {
+      custom_fields: [
+        {
+          display_name: "Order ID",
+          variable_name: "order_id",
+          value: orderId || ""
+        },
+        {
+          display_name: "Customer Name",
+          variable_name: "customer_name", 
+          value: paymentData?.name || ""
+        },
+        {
+          display_name: "Items",
+          variable_name: "items",
+          value: items.map(item => `${item.product.name} x${item.quantity}`).join(", ")
+        }
+      ]
+    }
+  };
+
+  // Paystack payment hook
+  const initializePayment = usePaystackPayment({
+    ...config,
+    onSuccess,
+    onClose
+  });
+
+  // Payment success handler
+  const onSuccess = async (reference: any) => {
+    try {
+      // Update order status to 'paid'
+      if (orderId) {
+        const { success, error } = await updateOrderStatus(orderId, 'paid');
+        if (success) {
+          toast({ 
+            title: "Payment Successful!", 
+            description: `Transaction reference: ${reference.reference}` 
+          });
+          
+          // Notify via Edge Function
+          await supabase.functions.invoke("notify-order", {
+            body: { 
+              orderId: orderId, 
+              paymentRef: reference.reference,
+              status: 'paid',
+              amount: totalPrice 
+            },
+          });
+        } else {
+          toast({ 
+            title: "Payment successful but order update failed", 
+            description: error || "Please contact support", 
+            variant: "destructive" 
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      toast({ 
+        title: "Payment successful but order update failed", 
+        description: "Please contact support", 
+        variant: "destructive" 
+      });
+    }
+  };
+
+  // Payment close handler
+  const onClose = () => {
+    toast({ 
+      title: "Payment cancelled", 
+      description: "You can try again or contact support if you need help" 
+    });
+  };
 
   const onSubmit = async (data: FormValues) => {
     if (!user) {
@@ -37,7 +123,7 @@ const Checkout = () => {
     setIsSubmitting(true);
     
     try {
-      // Create order in database
+      // Create order in database first
       const { order, error } = await createOrder(user.id, items, totalPrice);
       
       if (error || !order) {
@@ -45,24 +131,13 @@ const Checkout = () => {
         return;
       }
 
-      // Generate payment reference
-      const paymentRef = Math.random().toString(36).slice(2, 10).toUpperCase();
-      
+      // Store payment data and order ID for Paystack
+      setPaymentData(data);
       setOrderId(order.id);
-      clearCart();
       
-      toast({ title: "Order created successfully", description: `Order #${order.id} - Payment initiated via ${data.provider}` });
+      // Initialize Paystack payment
+      initializePayment();
       
-      // Notify via Edge Function (demo)
-      await supabase.functions.invoke("notify-order", {
-        body: { 
-          orderId: order.id, 
-          paymentRef,
-          provider: data.provider, 
-          phone: data.phone, 
-          amount: totalPrice 
-        },
-      });
     } catch (error) {
       toast({ title: "Checkout failed", description: "Please try again", variant: "destructive" });
     } finally {
