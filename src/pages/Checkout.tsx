@@ -15,7 +15,6 @@ interface FormValues {
   name: string;
   email: string;
   address: string;
-  provider: string;
   phone: string;
 }
 
@@ -111,7 +110,11 @@ const Checkout = () => {
   };
 
   // Paystack payment hook
-  const initializePayment = usePaystackPayment(config);
+  const initializePayment = usePaystackPayment({
+    ...config,
+    onSuccess,
+    onClose
+  });
 
   const onSubmit = async (data: FormValues) => {
     if (!user) {
@@ -135,7 +138,7 @@ const Checkout = () => {
       setOrderId(order.id);
       
       // Initialize Paystack payment
-      initializePayment(onSuccess, onClose);
+      initializePayment();
       
     } catch (error) {
       toast({ title: "Checkout failed", description: "Please try again", variant: "destructive" });
@@ -191,21 +194,10 @@ const Checkout = () => {
               <Input {...register("address", { required: true, minLength: 5 })} />
               {errors.address && <p className="text-sm text-destructive mt-1">Please enter your address</p>}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-1">
-                <label className="text-sm">Provider</label>
-                <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base md:text-sm" {...register("provider", { required: true })}>
-                  <option value="">Select provider</option>
-                  <option value="mpesa">M-Pesa</option>
-                  <option value="mtn">MTN MoMo</option>
-                  <option value="airtel">Airtel Money</option>
-                </select>
-              </div>
-              <div className="md:col-span-2">
-                <label className="text-sm">Mobile number</label>
-                <Input inputMode="tel" placeholder="e.g. +254700000000" {...register("phone", { required: true, minLength: 7 })} />
-                {errors.phone && <p className="text-sm text-destructive mt-1">Valid phone required</p>}
-              </div>
+            <div>
+              <label className="text-sm">Phone number (optional)</label>
+              <Input inputMode="tel" placeholder="e.g. +234700000000" {...register("phone", { required: false, minLength: 7 })} />
+              <p className="text-xs text-muted-foreground mt-1">For order updates and delivery</p>
             </div>
             <Button type="submit" size="lg" disabled={isSubmitting}>
               {isSubmitting ? "Creating Order..." : `Pay ${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(totalPrice)}`}
