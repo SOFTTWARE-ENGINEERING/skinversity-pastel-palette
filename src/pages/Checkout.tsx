@@ -34,7 +34,7 @@ const Checkout = () => {
     reference: (new Date()).getTime().toString(),
     email: paymentData?.email || user?.email || "",
     amount: totalPrice * 100, // Paystack expects amount in kobo (smallest currency unit)
-    publicKey: process.env.REACT_APP_PAYSTACK_PUBLIC_KEY || "pk_test_51H1234567890abcdefghijklmnopqrstuvwxyz", // Replace with your actual Paystack public key
+    publicKey: process.env.REACT_APP_PAYSTACK_PUBLIC_KEY || "pk_test_your_actual_key_here",
     currency: "NGN",
     channels: ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"],
     label: "Skinversity Order",
@@ -157,7 +157,7 @@ const Checkout = () => {
     <main className="container mx-auto px-4 py-10">
       <Helmet>
         <title>Checkout | Skinversity</title>
-        <meta name="description" content="Secure mobile money checkout at Skinversity. Enter your details to complete your order." />
+        <meta name="description" content="Secure Paystack checkout at Skinversity. Enter your details to complete your order." />
         <link rel="canonical" href="/checkout" />
       </Helmet>
 
@@ -199,17 +199,17 @@ const Checkout = () => {
               <Input inputMode="tel" placeholder="e.g. +234700000000" {...register("phone", { required: false, minLength: 7 })} />
               <p className="text-xs text-muted-foreground mt-1">For order updates and delivery</p>
             </div>
-            <Button type="submit" size="lg" disabled={isSubmitting}>
-              {isSubmitting ? "Creating Order..." : `Pay ${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(totalPrice)}`}
-            </Button>
+                         <Button type="submit" size="lg" disabled={isSubmitting}>
+               {isSubmitting ? "Processing..." : `Pay with Paystack - ${new Intl.NumberFormat("en-US", { style: "currency", currency: "NGN" }).format(totalPrice)}`}
+             </Button>
           </section>
           <aside className="border rounded-lg p-6 h-fit">
             <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-            <div className="flex items-center justify-between mb-6">
-              <span>Total</span>
-              <span className="font-semibold">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(totalPrice)}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">Mobile money only. This is a demo checkout; do not enter real numbers.</p>
+                         <div className="flex items-center justify-between mb-6">
+               <span>Total</span>
+               <span className="font-semibold">{new Intl.NumberFormat("en-US", { style: "currency", currency: "NGN" }).format(totalPrice)}</span>
+             </div>
+            <p className="text-xs text-muted-foreground">Secure payment powered by Paystack. Multiple payment options available.</p>
           </aside>
         </form>
       )}
