@@ -8,37 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ShoppingCart, Eye, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { updateOrderStatus } from "@/api/orders";
+import { updateOrderStatus, fetchAllOrders } from "@/api/orders";
 import type { OrderWithItems, OrderStatus } from "@/types/order";
 import type { Product } from "@/types/product";
-
-// Mock data for admin orders (in production, you'd fetch all orders)
-const mockOrders: OrderWithItems[] = [
-  {
-    id: "order-1",
-    user_id: "user-1",
-    total: 45.50,
-    status: "pending",
-    created_at: "2024-01-15T10:30:00Z",
-    updated_at: "2024-01-15T10:30:00Z",
-    order_items: [
-      { id: "item-1", order_id: "order-1", product_id: "p1", quantity: 2, price: 14.00, created_at: "2024-01-15T10:30:00Z" },
-      { id: "item-2", order_id: "order-1", product_id: "p5", quantity: 1, price: 17.50, created_at: "2024-01-15T10:30:00Z" }
-    ]
-  },
-  {
-    id: "order-2",
-    user_id: "user-2",
-    total: 32.00,
-    status: "paid",
-    created_at: "2024-01-14T15:45:00Z",
-    updated_at: "2024-01-14T16:20:00Z",
-    order_items: [
-      { id: "item-3", order_id: "order-2", product_id: "p9", quantity: 1, price: 20.00, created_at: "2024-01-14T15:45:00Z" },
-      { id: "item-4", order_id: "order-2", product_id: "p3", quantity: 1, price: 12.00, created_at: "2024-01-14T15:45:00Z" }
-    ]
-  }
-];
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
@@ -54,14 +26,17 @@ const AdminOrders = () => {
   const loadOrders = async () => {
     setLoading(true);
     try {
-      // In production, you'd call an API to fetch all orders
-      // For now, we'll use mock data
-      setTimeout(() => {
-        setOrders(mockOrders);
-        setLoading(false);
-      }, 500);
+      const { orders: allOrders, error } = await fetchAllOrders();
+      
+      if (error) {
+        toast({ title: "Error", description: error, variant: "destructive" });
+        return;
+      }
+      
+      setOrders(allOrders);
     } catch (error) {
       toast({ title: "Error", description: "Failed to load orders", variant: "destructive" });
+    } finally {
       setLoading(false);
     }
   };
