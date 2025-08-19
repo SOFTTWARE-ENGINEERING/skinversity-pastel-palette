@@ -87,8 +87,10 @@ const DashboardHome = () => {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">No orders yet</p>
+            <div className="text-2xl font-bold">{orders.length}</div>
+            <p className="text-xs text-muted-foreground">
+              {pendingOrders > 0 ? `${pendingOrders} pending` : 'No orders yet'}
+            </p>
           </CardContent>
         </Card>
 
