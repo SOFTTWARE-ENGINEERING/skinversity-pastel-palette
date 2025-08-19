@@ -108,3 +108,23 @@ export const updateOrderStatus = async (
     return { success: false, error: (error as Error).message };
   }
 };
+
+export const fetchAllOrders = async (): Promise<{ orders: OrderWithItems[]; error: string | null }> => {
+  try {
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        order_items (*)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      return { orders: [], error: error.message };
+    }
+
+    return { orders: orders || [], error: null };
+  } catch (error) {
+    return { orders: [], error: (error as Error).message };
+  }
+};
