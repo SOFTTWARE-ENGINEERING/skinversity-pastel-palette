@@ -8,7 +8,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<Error | null>;
   signUp: (email: string, password: string) => Promise<Error | null>;
-  signInWithProvider: (provider: "google" | "github" | "twitter") => Promise<Error | null>;
+  signInWithProvider: (provider: "google") => Promise<Error | null>;
   signOut: () => Promise<void>;
 }
 
@@ -51,7 +51,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
     return error ?? null;
   };
 
-  const signInWithProvider = async (provider: "google" | "github" | "twitter") => {
+  const signInWithProvider = async (provider: "google") => {
     const redirectUrl = `${window.location.origin}/`;
     const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: redirectUrl } });
     return error ?? null;

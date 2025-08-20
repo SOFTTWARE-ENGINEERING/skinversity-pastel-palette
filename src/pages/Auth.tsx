@@ -31,7 +31,7 @@ const Auth = () => {
     navigate("/");
   };
 
-  const handleProvider = async (provider: 'google' | 'github' | 'twitter') => {
+  const handleProvider = async (provider: 'google') => {
     const err = await signInWithProvider(provider);
     if (err) toast({ title: "Auth error", description: err.message, variant: "destructive" });
   };
@@ -74,7 +74,7 @@ const Auth = () => {
       <div className="space-y-2">
         <Button variant="outline" className="w-full" onClick={()=>handleProvider('google')}>Continue with Google</Button>
         {/* <Button variant="outline" className="w-full" onClick={()=>handleProvider('github')}>Continue with GitHub</Button> */}
-        <Button variant="outline" className="w-full" onClick={()=>handleProvider('twitter')}>Continue with Twitter</Button>
+        {/* <Button variant="outline" className="w-full" onClick={()=>handleProvider('twitter')}>Continue with Twitter</Button> */}
       </div>
     </main>
   );
