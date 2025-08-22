@@ -24,6 +24,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import DashboardHome from "./pages/admin/DashboardHome";
 import AdminProducts from "./pages/admin/AdminProducts";
 import AdminOrders from "./pages/admin/AdminOrders";
+import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
 
 const queryClient = new QueryClient();
 
@@ -51,7 +52,7 @@ const App = () => (
                 <Route path="/about" element={<About />} />
                 
                 {/* Admin Routes */}
-                <Route path="/admin" element={<AdminDashboard />}>
+                <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']} />}>
                   <Route index element={<DashboardHome />} />
                   <Route path="products" element={<AdminProducts />} />
                   <Route path="orders" element={<AdminOrders />} />
