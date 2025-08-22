@@ -34,7 +34,7 @@ const Checkout = () => {
     reference: (new Date()).getTime().toString(),
     email: paymentData?.email || user?.email || "",
     amount: totalPrice * 100, // Paystack expects amount in kobo (smallest currency unit)
-    publicKey: process.env.REACT_APP_PAYSTACK_PUBLIC_KEY || "pk_test_your_actual_key_here",
+    publicKey: import.meta.env.VITE_REACT_APP_PAYSTACK_PUBLIC_KEY || "pk_test_your_actual_key_here",
     currency: "NGN",
     channels: ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"],
     label: "Skinversity Order",

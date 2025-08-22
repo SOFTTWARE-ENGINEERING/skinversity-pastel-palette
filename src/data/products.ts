@@ -1,12 +1,13 @@
 import type { Product } from "@/types/product";
 
-import balancingCleanserImg from "@/assets/balancing-cleanser.jpg";
+import balancingCleanserImg from "@/assets/balancing-cleasnser.jpg";
 import brightSerumImg from "@/assets/bright-serum.jpg";
 import cleanserImg from "@/assets/cleanser.jpg";
 import exfoliatingTonerImg from "@/assets/exfoliating-toner.jpg";
 import foamingCleanserImg from "@/assets/foaming-cleanser.jpg";
+import heroSkinversityImg from "@/assets/hero-skinversity.jpg";
 import lipBalmImg from "@/assets/lip-balm.jpg";
-import lipTherapy1Img from "@/assets/lip-therapy1.jpg";
+import lipTherapy1Img from "@/assets/lip-therapt1.jpg";
 import lipTherapyImg from "@/assets/lip-therapy.jpg";
 import lipTintImg from "@/assets/lip-tint.jpg";
 import moisturizingCreamImg from "@/assets/moisturizing-cream.jpg";
