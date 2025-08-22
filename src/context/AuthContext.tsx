@@ -2,8 +2,12 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
+interface CustomUser extends User {
+  role?: 'admin' | 'user';
+}
+
 interface AuthContextType {
-  user: User | null;
+  user: CustomUser | null;
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<Error | null>;
@@ -15,7 +19,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<CustomUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,13 +27,21 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
     // Set up listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
-      setUser(newSession?.user ?? null);
+      if (newSession?.user) {
+        setUser({ ...newSession.user, role: newSession.user.user_metadata.role || 'user' });
+      } else {
+        setUser(null);
+      }
     });
 
     // Then get existing session
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      setUser(data.session?.user ?? null);
+      if (data.session?.user) {
+        setUser({ ...data.session.user, role: data.session.user.user_metadata.role || 'user' });
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
 
@@ -37,7 +49,10 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (data.user) {
+      setUser({ ...data.user, role: data.user.user_metadata.role || 'user' });
+    }
     return error ?? null;
   };
 
