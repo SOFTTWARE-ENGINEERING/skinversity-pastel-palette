@@ -27,8 +27,15 @@ const Auth = () => {
       toast({ title: "Check your email", description: "Confirm your email to finish signup." });
     } else {
       toast({ title: "Welcome back", description: `Logged in as ${data.email}` });
+
+      // Conditional routing based on user role
+      if (user?.role === 'admin') {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/products"); // Assuming /products is the user dashboard
+      }
     }
-    navigate("/");
+    
   };
 
   const handleProvider = async (provider: 'google') => {

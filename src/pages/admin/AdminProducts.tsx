@@ -19,6 +19,7 @@ interface ProductFormData {
   description: string;
   price: number;
   rating: number;
+  image: string; // Add image field
 }
 
 const AdminProducts = () => {
@@ -31,7 +32,8 @@ const AdminProducts = () => {
     category: 'cleansers',
     description: '',
     price: 0,
-    rating: 0
+    rating: 0,
+    image: '' // Initialize image field
   });
   const { toast } = useToast();
 
@@ -58,7 +60,8 @@ const AdminProducts = () => {
       category: 'cleansers',
       description: '',
       price: 0,
-      rating: 0
+      rating: 0,
+      image: '' // Reset image field
     });
     setIsModalOpen(true);
   };
@@ -70,7 +73,8 @@ const AdminProducts = () => {
       category: product.category,
       description: product.description,
       price: product.price,
-      rating: product.rating
+      rating: product.rating,
+      image: product.image // Set image field for editing
     });
     setIsModalOpen(true);
   };
@@ -111,7 +115,7 @@ const AdminProducts = () => {
         const newProduct: Product = {
           id: `p${Date.now()}`,
           ...formData,
-          image: '/placeholder-product.jpg' // In production, you'd handle image upload
+          image: formData.image // Use the uploaded image
         };
         setProducts([newProduct, ...products]);
         toast({ title: "Success", description: "Product added successfully" });
@@ -124,10 +128,22 @@ const AdminProducts = () => {
         category: 'cleansers',
         description: '',
         price: 0,
-        rating: 0
+        rating: 0,
+        image: '' // Reset image field
       });
     } catch (error) {
       toast({ title: "Error", description: "Failed to save product", variant: "destructive" });
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, image: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -191,6 +207,7 @@ const AdminProducts = () => {
                     <TableHead>Category</TableHead>
                     <TableHead>Price</TableHead>
                     <TableHead>Rating</TableHead>
+                    <TableHead>Image</TableHead> {/* New TableHead for Image */}
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -219,6 +236,11 @@ const AdminProducts = () => {
                       </TableCell>
                       <TableCell>${product.price.toFixed(2)}</TableCell>
                       <TableCell>{product.rating}/5</TableCell>
+                      <TableCell> {/* New TableCell for Image */}
+                        {product.image && (
+                          <img src={product.image} alt={product.name} className="h-12 w-12 object-cover rounded-md" />
+                        )}
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Button
@@ -283,17 +305,31 @@ const AdminProducts = () => {
               </Select>
             </div>
             
-            <div>
+            <div className="grid gap-2">
               <Label htmlFor="description">Description</Label>
               <Input
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Enter product description"
+                placeholder="Product description"
                 required
               />
             </div>
-            
+
+            {/* Image Upload */}
+            <div className="grid gap-2">
+              <Label htmlFor="image">Product Image</Label>
+              <Input
+                id="image"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+              />
+              {formData.image && (
+                <img src={formData.image} alt="Product Thumbnail" className="mt-2 h-20 w-20 object-cover rounded-md" />
+              )}
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="price">Price ($)</Label>

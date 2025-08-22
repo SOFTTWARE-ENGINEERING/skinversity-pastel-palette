@@ -1,4 +1,4 @@
-export type Category = "cleansers" | "moisturizers" | "sunscreens";
+export type Category = "cleansers" | "moisturizers" | "sunscreens" | "lip care" | "toner";
 
 export interface Product {
   id: string;
