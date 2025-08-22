@@ -23,7 +23,7 @@ const About = () => {
       <section>
         <h2 className="text-2xl font-semibold mb-6">Our Team</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[{img:team1,name:"Avery Chen",role:"Founder & CEO"},{img:team2,name:"Maya Patel",role:"Product Design"},{img:team3,name:"Leo Kim",role:"Skincare Chemist"}].map((t)=> (
+          {[{img:team1,name:"Fatima Salifu",role:"Founder & CEO"}].map((t)=> (
             <article key={t.name} className="text-center">
               <img src={t.img} alt={`${t.name} portrait`} className="mx-auto w-40 h-40 rounded-full object-cover" loading="lazy" />
               <h3 className="mt-4 font-medium">{t.name}</h3>
